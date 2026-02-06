@@ -31,7 +31,7 @@ const GroceryRequests = () => {
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const res = await axios.get('http://127.0.0.1:5000/api/grocery', config);
+            const res = await axios.get('/api/grocery', config);
             setRequests(res.data);
             setLoading(false);
         } catch (err) {
@@ -51,7 +51,7 @@ const GroceryRequests = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
-            await axios.post('http://127.0.0.1:5000/api/grocery', formData, config);
+            await axios.post('/api/grocery', formData, config);
 
             setMessage({ type: 'success', text: 'Order placed successfully!' });
             setFormData({ itemName: '', quantity: 1, unit: 'units', notes: '' });

@@ -19,7 +19,7 @@ const RoomAllocation = () => {
                 }
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 // Fetch user data which now includes populated room
-                const res = await axios.get('http://127.0.0.1:5000/api/auth/me', config);
+                const res = await axios.get('/api/auth/me', config);
 
                 if (res.data.room) {
                     setRoom(res.data.room);

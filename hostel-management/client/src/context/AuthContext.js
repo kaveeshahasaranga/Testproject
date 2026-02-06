@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -7,14 +8,27 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for token in localStorage
-        const token = localStorage.getItem('token');
-        if (token) {
-            // In a real app, you would validate this token with the backend here
-            // For now, we'll just set a dummy user or decode the token if using jwt-decode
-            setUser({ token });
-        }
-        setLoading(false);
+        const checkUserLoggedIn = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const config = {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    };
+                    const { data } = await axios.get('/api/auth/me', config);
+                    setUser({ ...data, token });
+                } catch (error) {
+                    console.error("Token verification failed:", error);
+                    localStorage.removeItem('token');
+                    setUser(null);
+                }
+            }
+            setLoading(false);
+        };
+
+        checkUserLoggedIn();
     }, []);
 
     const login = (userData) => {
