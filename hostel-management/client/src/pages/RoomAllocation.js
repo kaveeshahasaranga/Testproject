@@ -11,26 +11,34 @@ const RoomAllocation = () => {
 
     useEffect(() => {
         const fetchRoomData = async () => {
-            // Mock data for now as we don't have a direct "getMyRoom" endpoint fully wired with detailed user data yet
-            // In real scenario, user object might container room ID, then we fetch room details
-            // Or we fetch /api/auth/me which populates room
             try {
-                // This is a placeholder as backend might need adjustment to return full room details for the logged-in user effortlessly
-                // For demonstration, we assume user might have room data or we fetch it. 
-                // Let's implement a safe check or mock if undefined for UI dev
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setLoading(false);
+                    return;
+                }
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                // Fetch user data which now includes populated room
+                const res = await axios.get('http://127.0.0.1:5000/api/auth/me', config);
+
+                if (res.data.room) {
+                    setRoom(res.data.room);
+                }
                 setLoading(false);
             } catch (err) {
                 console.error(err);
                 setLoading(false);
             }
         };
-        fetchRoomData();
+
+        if (user) {
+            fetchRoomData();
+        }
     }, [user]);
 
     if (loading) return <div className="p-10 text-center">Loading room details...</div>;
 
-    // Placeholder if no room assigned (which is true for new users)
-    if (!room && !user?.room) {
+    if (!room) {
         return (
             <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">My Room</h2>
@@ -46,7 +54,6 @@ const RoomAllocation = () => {
     return (
         <div className="p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">My Room Allocation</h2>
-            {/* If we had room data, render it here */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <div className="flex items-center space-x-4 mb-4">
@@ -55,17 +62,17 @@ const RoomAllocation = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Room Number</p>
-                            <p className="text-xl font-bold text-gray-800">101-A</p>
+                            <p className="text-xl font-bold text-gray-800">{room.roomNumber}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p className="text-gray-500">Type</p>
-                            <p className="font-medium">Double Sharing</p>
+                            <p className="font-medium">{room.type}</p>
                         </div>
                         <div>
-                            <p className="text-gray-500">Floor</p>
-                            <p className="font-medium">1st Floor</p>
+                            <p className="text-gray-500">Capacity</p>
+                            <p className="font-medium">{room.capacity} Person(s)</p>
                         </div>
                     </div>
                 </Card>
@@ -76,18 +83,14 @@ const RoomAllocation = () => {
                             <Users size={24} />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500">Roommate</p>
-                            <p className="text-xl font-bold text-gray-800">Jane Smith</p>
+                            <p className="text-sm text-gray-500">Occupants</p>
+                            <p className="text-xl font-bold text-gray-800">{room.occupants ? room.occupants.length : 0} / {room.capacity}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-gray-500">IT Number</p>
-                            <p className="font-medium">IT98765432</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Contact</p>
-                            <p className="font-medium">077-1234567</p>
+                            <p className="text-gray-500">Semester Price</p>
+                            <p className="font-medium">LKR {room.pricePerSemester}</p>
                         </div>
                     </div>
                 </Card>
@@ -97,12 +100,15 @@ const RoomAllocation = () => {
                         <Info size={20} className="text-indigo-500 mt-1" />
                         <div>
                             <h4 className="font-bold text-gray-800">Room Facilities</h4>
-                            <ul className="list-disc list-inside mt-2 text-gray-600 text-sm">
-                                <li>Attached Bathroom</li>
-                                <li>Study Table & Chair</li>
-                                <li>Ceiling Fan</li>
-                                <li>Balcony Access</li>
-                            </ul>
+                            {room.facilities && room.facilities.length > 0 ? (
+                                <ul className="list-disc list-inside mt-2 text-gray-600 text-sm">
+                                    {room.facilities.map((fac, index) => (
+                                        <li key={index}>{fac}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-gray-500 mt-2">No specific facilities listed.</p>
+                            )}
                         </div>
                     </div>
                 </Card>

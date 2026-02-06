@@ -32,7 +32,7 @@ const Maintenance = () => {
                     Authorization: `Bearer ${token}`
                 }
             };
-            const res = await axios.get('http://localhost:5000/api/maintenance', config);
+            const res = await axios.get('http://127.0.0.1:5000/api/maintenance', config);
             setRequests(res.data);
             setLoading(false);
         } catch (err) {
@@ -70,7 +70,7 @@ const Maintenance = () => {
                 }
             };
 
-            await axios.post('http://localhost:5000/api/maintenance', data, config);
+            await axios.post('http://127.0.0.1:5000/api/maintenance', data, config);
 
             setMessage({ type: 'success', text: 'Request submitted successfully!' });
             setFormData({ category: 'Electricity', description: '', image: null });
@@ -203,7 +203,7 @@ const Maintenance = () => {
                                             {renderStatus(req.status)}
                                             {req.image && (
                                                 <a
-                                                    href={`http://localhost:5000/${req.image}`}
+                                                    href={`http://127.0.0.1:5000/${req.image}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"

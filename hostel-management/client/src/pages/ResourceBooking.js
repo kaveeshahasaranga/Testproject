@@ -30,7 +30,7 @@ const ResourceBooking = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
             // Fetch user's bookings
-            const res = await axios.get('http://localhost:5000/api/bookings?my=true', config);
+            const res = await axios.get('http://127.0.0.1:5000/api/bookings?my=true', config);
             setBookings(res.data);
             setLoading(false);
         } catch (err) {
@@ -50,7 +50,7 @@ const ResourceBooking = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
-            await axios.post('http://localhost:5000/api/bookings', formData, config);
+            await axios.post('http://127.0.0.1:5000/api/bookings', formData, config);
 
             setMessage({ type: 'success', text: 'Booking created successfully!' });
             fetchBookings();

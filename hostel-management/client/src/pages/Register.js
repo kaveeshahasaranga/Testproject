@@ -34,7 +34,7 @@ const Register = () => {
         try {
             // Remove confirmPassword before sending
             const { confirmPassword, ...registerData } = formData;
-            const res = await axios.post('http://localhost:5000/api/auth/register', registerData);
+            const res = await axios.post('http://127.0.0.1:5000/api/auth/register', registerData);
             login(res.data);
             navigate('/');
         } catch (err) {

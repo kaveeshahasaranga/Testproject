@@ -104,7 +104,7 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.id).select('-password').populate('room');
         res.status(200).json(user);
     } catch (err) {
         res.status(500).json({ message: 'Server Error' });

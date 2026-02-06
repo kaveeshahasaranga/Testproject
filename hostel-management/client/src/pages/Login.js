@@ -20,7 +20,7 @@ const Login = () => {
         e.preventDefault();
         setError(null);
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+            const res = await axios.post('http://127.0.0.1:5000/api/auth/login', formData);
             login(res.data);
             navigate('/');
         } catch (err) {

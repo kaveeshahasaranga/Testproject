@@ -4,7 +4,7 @@ import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import axios from 'axios';
-import { ShoppingIcon, ShoppingBag, Truck, Check } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Truck, Check } from 'lucide-react';
 
 // Renaming the Lucide ShoppingBag to avoid conflict if necessary, but here reusing ShoppingBag variable name is fine if not imported twice
 // Wait, I imported ShoppingIcon? Lucide React exports `ShoppingCart` usually, let's stick to standard names or check imports
@@ -31,7 +31,7 @@ const GroceryRequests = () => {
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const res = await axios.get('http://localhost:5000/api/grocery', config);
+            const res = await axios.get('http://127.0.0.1:5000/api/grocery', config);
             setRequests(res.data);
             setLoading(false);
         } catch (err) {
@@ -51,7 +51,7 @@ const GroceryRequests = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
-            await axios.post('http://localhost:5000/api/grocery', formData, config);
+            await axios.post('http://127.0.0.1:5000/api/grocery', formData, config);
 
             setMessage({ type: 'success', text: 'Order placed successfully!' });
             setFormData({ itemName: '', quantity: 1, unit: 'units', notes: '' });
@@ -150,9 +150,9 @@ const GroceryRequests = () => {
                                     </div>
                                     <div>
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${req.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                req.status === 'Approved' ? 'bg-blue-100 text-blue-800' :
-                                                    req.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                                        'bg-red-100 text-red-800'
+                                            req.status === 'Approved' ? 'bg-blue-100 text-blue-800' :
+                                                req.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                                    'bg-red-100 text-red-800'
                                             }`}>
                                             {req.status}
                                         </span>
