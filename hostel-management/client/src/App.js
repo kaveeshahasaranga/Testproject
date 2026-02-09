@@ -6,7 +6,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Components
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import Sidebar from './components/Sidebar';
 
 // Pages
 import Login from './pages/Login';

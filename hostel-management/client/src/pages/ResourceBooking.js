@@ -41,6 +41,20 @@ const ResourceBooking = () => {
 
     const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+    const onCancel = async (id) => {
+        if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            await axios.delete(`/api/bookings/${id}`, config);
+            setMessage({ type: 'success', text: 'Booking cancelled successfully' });
+            fetchBookings();
+        } catch (err) {
+            setMessage({ type: 'error', text: err.response?.data?.message || 'Cancellation failed' });
+        }
+    };
+
     const onSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -145,9 +159,20 @@ const ResourceBooking = () => {
                                 <Card key={booking._id} className="border-l-4 border-indigo-500">
                                     <div className="flex justify-between items-start mb-2">
                                         <h4 className="font-bold text-indigo-900">{booking.resource}</h4>
-                                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                                            <CheckCircle size={12} className="mr-1" /> {booking.status}
-                                        </span>
+                                        <div className="flex items-center space-x-2">
+                                            <span className={`text-xs px-2 py-1 rounded-full flex items-center ${booking.status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                                }`}>
+                                                <CheckCircle size={12} className="mr-1" /> {booking.status}
+                                            </span>
+                                            {booking.status !== 'Cancelled' && (
+                                                <button
+                                                    onClick={() => onCancel(booking._id)}
+                                                    className="text-red-500 hover:text-red-700 text-xs font-semibold underline"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="text-sm text-gray-600 space-y-1">
                                         <div className="flex items-center">
@@ -162,7 +187,6 @@ const ResourceBooking = () => {
                                 </Card>
                             ))}
                         </div>
-                    )}
                 </div>
             </div>
         </div>

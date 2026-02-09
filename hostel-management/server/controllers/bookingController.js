@@ -86,7 +86,39 @@ const getBookings = async (req, res) => {
     }
 };
 
+// @desc    Cancel a booking
+// @route   DELETE /api/bookings/:id
+// @access  Private
+const cancelBooking = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Check if user owns the booking
+        if (booking.student.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        // Optional: Check if already cancelled
+        if (booking.status === 'Cancelled') {
+            return res.status(400).json({ message: 'Booking already cancelled' });
+        }
+
+        // Update status instead of deleting to keep record
+        booking.status = 'Cancelled';
+        await booking.save();
+
+        res.json({ message: 'Booking cancelled successfully', booking });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = {
     createBooking,
-    getBookings
+    getBookings,
+    cancelBooking
 };
