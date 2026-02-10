@@ -187,6 +187,7 @@ const ResourceBooking = () => {
                                 </Card>
                             ))}
                         </div>
+                    )}
                 </div>
             </div>
         </div>

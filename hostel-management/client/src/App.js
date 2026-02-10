@@ -15,6 +15,7 @@ import RoomAllocation from './pages/RoomAllocation';
 import Maintenance from './pages/Maintenance';
 import ResourceBooking from './pages/ResourceBooking';
 import GroceryRequests from './pages/GroceryRequests';
+import AdminBookings from './pages/AdminBookings';
 
 function App() {
     return (
@@ -41,6 +42,7 @@ function App() {
                                             <Route path="/maintenance" element={<Maintenance />} />
                                             <Route path="/booking" element={<ResourceBooking />} />
                                             <Route path="/grocery" element={<GroceryRequests />} />
+                                            <Route path="/admin/bookings" element={<AdminBookings />} />
                                         </Routes>
                                     </main>
                                 </div>

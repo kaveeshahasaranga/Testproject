@@ -111,8 +111,21 @@ const getMe = async (req, res) => {
     }
 };
 
+// @desc    Get all users (Admin)
+// @route   GET /api/auth/users
+// @access  Private (Admin)
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select('-password').populate('room');
+        res.status(200).json(users);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
-    getMe
+    getMe,
+    getAllUsers
 };

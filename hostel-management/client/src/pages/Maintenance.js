@@ -17,8 +17,11 @@ const Maintenance = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState(null);
+    const [editingId, setEditingId] = useState(null);
+    const [editData, setEditData] = useState({ status: '', adminRemarks: '' });
 
     const categories = ['Electricity', 'Water', 'Furniture', 'Wi-Fi', 'Other'];
+    const isAdmin = user?.role === 'admin' || user?.role === 'warden';
 
     useEffect(() => {
         fetchRequests();
@@ -82,6 +85,24 @@ const Maintenance = () => {
         }
     };
 
+    const onEditClick = (req) => {
+        setEditingId(req._id);
+        setEditData({ status: req.status, adminRemarks: req.adminRemarks || '' });
+    };
+
+    const onUpdateSubmit = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            await axios.put(`/api/maintenance/${id}`, editData, config);
+            setMessage({ type: 'success', text: 'Request updated successfully' });
+            setEditingId(null);
+            fetchRequests();
+        } catch (err) {
+            setMessage({ type: 'error', text: 'Update failed' });
+        }
+    };
+
     // Helper to render status badge
     const renderStatus = (status) => {
         const styles = {
@@ -109,73 +130,87 @@ const Maintenance = () => {
 
     return (
         <div className="p-8">
-            <h2 className="text-3xl font-bold text-indigo-900 mb-2">Maintenance</h2>
-            <p className="text-gray-600 mb-8">Report and track hostel maintenance issues.</p>
+            <h2 className="text-3xl font-bold text-indigo-900 mb-2">
+                {isAdmin ? 'Maintenance Management' : 'Maintenance'}
+            </h2>
+            <p className="text-gray-600 mb-8">
+                {isAdmin ? 'Manage and track maintenance requests.' : 'Report and track hostel maintenance issues.'}
+            </p>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Request Form */}
-                <div className="lg:col-span-1">
-                    <Card>
-                        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                            <PenTool className="mr-2 text-indigo-600" /> New Request
-                        </h3>
+                {/* Request Form (Student Only) */}
+                {!isAdmin && (
+                    <div className="lg:col-span-1">
+                        <Card>
+                            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <PenTool className="mr-2 text-indigo-600" /> New Request
+                            </h3>
 
-                        {message && (
-                            <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {message.text}
-                            </div>
-                        )}
-
-                        <form onSubmit={onSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                <select
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={onChange}
-                                    className="glass-input w-full"
-                                >
-                                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={onChange}
-                                    rows="4"
-                                    className="glass-input w-full"
-                                    placeholder="Describe the issue..."
-                                    required
-                                ></textarea>
-                            </div>
-
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Upload Image (Optional)</label>
-                                <div className="flex items-center justify-center w-full">
-                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
-                                            <Upload className="w-8 h-8 mb-2" />
-                                            <p className="text-xs">Click to upload image</p>
-                                        </div>
-                                        <input type="file" name="image" className="hidden" onChange={onChange} accept="image/*" />
-                                    </label>
+                            {message && (
+                                <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {message.text}
                                 </div>
-                                {formData.image && <p className="text-xs text-green-600 mt-2">Selected: {formData.image.name}</p>}
-                            </div>
+                            )}
 
-                            <Button type="submit" className="w-full" disabled={submitting}>
-                                {submitting ? 'Submitting...' : 'Submit Request'}
-                            </Button>
-                        </form>
-                    </Card>
-                </div>
+                            <form onSubmit={onSubmit}>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={onChange}
+                                        className="glass-input w-full"
+                                    >
+                                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={onChange}
+                                        rows="4"
+                                        className="glass-input w-full"
+                                        placeholder="Describe the issue..."
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Upload Image (Optional)</label>
+                                    <div className="flex items-center justify-center w-full">
+                                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
+                                                <Upload className="w-8 h-8 mb-2" />
+                                                <p className="text-xs">Click to upload image</p>
+                                            </div>
+                                            <input type="file" name="image" className="hidden" onChange={onChange} accept="image/*" />
+                                        </label>
+                                    </div>
+                                    {formData.image && <p className="text-xs text-green-600 mt-2">Selected: {formData.image.name}</p>}
+                                </div>
+
+                                <Button type="submit" className="w-full" disabled={submitting}>
+                                    {submitting ? 'Submitting...' : 'Submit Request'}
+                                </Button>
+                            </form>
+                        </Card>
+                    </div>
+                )}
 
                 {/* Request List */}
-                <div className="lg:col-span-2">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">My Requests</h3>
+                <div className={isAdmin ? "lg:col-span-3" : "lg:col-span-2"}>
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">
+                        {isAdmin ? 'All Requests' : 'My Requests'}
+                    </h3>
+
+                    {isAdmin && message && (
+                        <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {message.text}
+                        </div>
+                    )}
 
                     {requests.length === 0 ? (
                         <Card className="text-center py-10 text-gray-500">
@@ -186,12 +221,18 @@ const Maintenance = () => {
                             {requests.map((req) => (
                                 <Card key={req._id} className="transition-transform hover:scale-[1.01]">
                                     <div className="flex justify-between items-start">
-                                        <div>
-                                            <span className="text-xs font-bold uppercase text-indigo-500 tracking-wide">{req.category}</span>
+                                        <div className="flex-1">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-xs font-bold uppercase text-indigo-500 tracking-wide">{req.category}</span>
+                                                {isAdmin && req.student && (
+                                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                                        {req.student.name} (Room: {req.student.room ? req.student.room.roomNumber : 'N/A'})
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="mt-1 font-medium text-gray-800">{req.description}</p>
                                             <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                                                 <span>{new Date(req.createdAt).toLocaleDateString()}</span>
-                                                {/* Only show student name if admin/warden view, but for now user sees own */}
                                             </div>
                                             {req.adminRemarks && (
                                                 <div className="mt-3 bg-gray-50 p-2 rounded border-l-4 border-indigo-200 text-sm text-gray-600">
@@ -199,17 +240,64 @@ const Maintenance = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex flex-col items-end space-y-2">
-                                            {renderStatus(req.status)}
-                                            {req.image && (
-                                                <a
-                                                    href={`/${req.image}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
-                                                >
-                                                    View Image
-                                                </a>
+
+                                        <div className="flex flex-col items-end space-y-2 ml-4">
+                                            {editingId === req._id ? (
+                                                <div className="flex flex-col space-y-2 bg-gray-50 p-2 rounded border border-gray-200">
+                                                    <select
+                                                        value={editData.status}
+                                                        onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                                                        className="text-xs p-1 border rounded"
+                                                    >
+                                                        <option value="Pending">Pending</option>
+                                                        <option value="In Progress">In Progress</option>
+                                                        <option value="Completed">Completed</option>
+                                                        <option value="Rejected">Rejected</option>
+                                                    </select>
+                                                    <textarea
+                                                        value={editData.adminRemarks}
+                                                        onChange={(e) => setEditData({ ...editData, adminRemarks: e.target.value })}
+                                                        placeholder="Remarks..."
+                                                        className="text-xs p-1 border rounded w-full"
+                                                        rows="2"
+                                                    />
+                                                    <div className="flex space-x-1">
+                                                        <button
+                                                            onClick={() => onUpdateSubmit(req._id)}
+                                                            className="text-xs bg-green-500 text-white px-2 py-1 rounded"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setEditingId(null)}
+                                                            className="text-xs bg-gray-300 text-gray-700 px-2 py-1 rounded"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {renderStatus(req.status)}
+                                                    {req.image && (
+                                                        <a
+                                                            href={`/${req.image}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
+                                                        >
+                                                            View Image
+                                                        </a>
+                                                    )}
+                                                    {isAdmin && (
+                                                        <button
+                                                            onClick={() => onEditClick(req)}
+                                                            className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+                                                        >
+                                                            Update Status
+                                                        </button>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                     </div>
