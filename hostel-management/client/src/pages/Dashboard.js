@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext'; // Import NotificationContext
 import axios from 'axios';
 import Card from '../components/ui/Card';
 import {
@@ -17,6 +18,7 @@ import Input from '../components/ui/Input'; // Import Input
 
 const Dashboard = () => {
     const { user } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext); // Use NotificationContext
     const navigate = useNavigate();
     const [stats, setStats] = useState({
         roommates: 0,
@@ -34,7 +36,6 @@ const Dashboard = () => {
     // Notice State
     const [showNoticeForm, setShowNoticeForm] = useState(false);
     const [newNotice, setNewNotice] = useState({ title: '', content: '' });
-    const [noticeMessage, setNoticeMessage] = useState(null);
 
     const isAdmin = user?.role === 'admin' || user?.role === 'warden';
 
@@ -113,17 +114,15 @@ const Dashboard = () => {
 
             await axios.post('/api/notices', newNotice, config);
 
-            setNoticeMessage({ type: 'success', text: 'Notice posted!' });
+            showNotification('success', 'Notice posted successfully');
             setNewNotice({ title: '', content: '' });
             setShowNoticeForm(false);
 
             // Refresh notices
             const res = await axios.get('/api/notices', config);
             setNotices(res.data);
-
-            setTimeout(() => setNoticeMessage(null), 3000);
         } catch (err) {
-            setNoticeMessage({ type: 'error', text: 'Failed to post notice' });
+            showNotification('error', err.response?.data?.message || 'Failed to post notice');
         }
     };
 
@@ -135,12 +134,13 @@ const Dashboard = () => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
             await axios.delete(`/api/notices/${id}`, config);
+            showNotification('success', 'Notice deleted successfully');
 
             // Refresh notices
             const res = await axios.get('/api/notices', config);
             setNotices(res.data);
         } catch (err) {
-            alert('Failed to delete notice');
+            showNotification('error', err.response?.data?.message || 'Failed to delete notice');
         }
     };
 
@@ -252,12 +252,6 @@ const Dashboard = () => {
                             </button>
                         )}
                     </div>
-
-                    {noticeMessage && (
-                        <div className={`p-3 rounded mb-4 text-sm ${noticeMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {noticeMessage.text}
-                        </div>
-                    )}
 
                     {showNoticeForm && (
                         <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">

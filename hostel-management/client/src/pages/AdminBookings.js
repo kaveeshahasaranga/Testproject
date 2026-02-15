@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext'; // Import NotificationContext
 import Card from '../components/ui/Card';
 import axios from 'axios';
 import { Calendar, Clock, User, CheckCircle } from 'lucide-react';
 
 const AdminBookings = () => {
     const { user } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext); // Use NotificationContext
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -20,6 +22,7 @@ const AdminBookings = () => {
                 setLoading(false);
             } catch (err) {
                 console.error(err);
+                showNotification('error', 'Failed to fetch bookings'); // Show notification
                 setLoading(false);
             }
         };
@@ -27,7 +30,7 @@ const AdminBookings = () => {
         if (user) {
             fetchBookings();
         }
-    }, [user]);
+    }, [user, showNotification]);
 
     if (loading) return <div className="p-10 text-center">Loading bookings...</div>;
 

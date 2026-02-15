@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext'; // Import NotificationContext
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import axios from 'axios';
-import { Bed, Users, Info, Plus, X } from 'lucide-react';
+import { Bed, Users, Info, Plus, X, Trash2 } from 'lucide-react'; // Import Trash2
 
 const RoomAllocation = () => {
     const { user } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext); // Use NotificationContext
     const [room, setRoom] = useState(null); // For Student
     const [rooms, setRooms] = useState([]); // For Admin
     const [loading, setLoading] = useState(true);
@@ -19,7 +21,6 @@ const RoomAllocation = () => {
         pricePerSemester: '',
         facilities: ''
     });
-    const [message, setMessage] = useState(null);
 
     const isAdmin = user?.role === 'admin' || user?.role === 'warden';
 
@@ -63,7 +64,7 @@ const RoomAllocation = () => {
             };
 
             await axios.post('/api/rooms', roomData, config);
-            setMessage({ type: 'success', text: 'Room added successfully' });
+            showNotification('success', 'Room added successfully');
             setShowAddRoom(false);
             setNewRoom({ roomNumber: '', type: 'Double', capacity: 2, pricePerSemester: '', facilities: '' });
 
@@ -71,7 +72,25 @@ const RoomAllocation = () => {
             const res = await axios.get('/api/rooms', config);
             setRooms(res.data);
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to add room' });
+            showNotification('error', err.response?.data?.message || 'Failed to add room');
+        }
+    };
+
+    const handleDeleteRoom = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this room?')) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            await axios.delete(`/api/rooms/${id}`, config);
+            showNotification('success', 'Room deleted successfully');
+
+            // Refresh
+            const res = await axios.get('/api/rooms', config);
+            setRooms(res.data);
+        } catch (err) {
+            showNotification('error', err.response?.data?.message || 'Failed to delete room');
         }
     };
 
@@ -91,12 +110,6 @@ const RoomAllocation = () => {
                         {showAddRoom ? 'Cancel' : 'Add Room'}
                     </Button>
                 </div>
-
-                {message && (
-                    <div className={`p-4 rounded mb-6 ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {message.text}
-                    </div>
-                )}
 
                 {showAddRoom && (
                     <Card className="mb-8 border-2 border-indigo-100">
@@ -154,11 +167,21 @@ const RoomAllocation = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {rooms.map((r) => (
-                        <Card key={r._id} className="relative overflow-hidden">
+                        <Card key={r._id} className="relative overflow-hidden group">
                             <div className={`absolute top-0 right-0 p-2 text-xs font-bold uppercase rounded-bl-lg ${r.occupants.length >= r.capacity ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
                                 }`}>
                                 {r.occupants.length >= r.capacity ? 'Full' : 'Available'}
                             </div>
+
+                            {/* Delete Button */}
+                            <button
+                                onClick={() => handleDeleteRoom(r._id)}
+                                className="absolute bottom-2 right-2 p-2 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Delete Room"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+
                             <div className="flex items-center space-x-3 mb-3">
                                 <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                                     <Bed size={24} />

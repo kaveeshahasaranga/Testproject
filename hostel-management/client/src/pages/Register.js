@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext'; // Import NotificationContext
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -14,8 +15,8 @@ const Register = () => {
         password: '',
         confirmPassword: ''
     });
-    const [error, setError] = useState(null);
     const { login } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext); // Use NotificationContext
     const navigate = useNavigate();
 
     const { name, itNumber, email, password, confirmPassword } = formData;
@@ -24,10 +25,9 @@ const Register = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match");
+            showNotification('error', "Passwords do not match"); // Use global notification
             return;
         }
 
@@ -36,9 +36,10 @@ const Register = () => {
             const { confirmPassword, ...registerData } = formData;
             const res = await axios.post('/api/auth/register', registerData);
             login(res.data);
+            showNotification('success', 'Registration successful! Welcome to HostelHub.');
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed');
+            showNotification('error', err.response?.data?.message || 'Registration failed'); // Use global notification
         }
     };
 
@@ -49,12 +50,6 @@ const Register = () => {
                     <h1 className="text-3xl font-bold text-indigo-900">Create Account</h1>
                     <p className="text-gray-600">Join our hostel community</p>
                 </div>
-
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
-                        {error}
-                    </div>
-                )}
 
                 <form onSubmit={onSubmit}>
                     <Input

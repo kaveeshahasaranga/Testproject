@@ -78,8 +78,18 @@ const getBookings = async (req, res) => {
             return res.json(bookings);
         }
 
-        // Return all bookings for calendar view (maybe filter by date if needed later)
-        const bookings = await Booking.find().populate('student', 'name').sort({ date: -1, startTime: -1 });
+        // Return all bookings
+        let query = Booking.find().sort({ date: -1, startTime: -1 });
+
+        // If admin, populate student name. If student, exclude student details or just show status.
+        // For now, let's allow seeing names as it helps find who is hogging resources, 
+        // but ideally we should restrict this. 
+        // DECISION: To be safe, let's only populate name if admin.
+        if (req.user.role === 'admin') {
+            query = query.populate('student', 'name email');
+        }
+
+        const bookings = await query;
         res.json(bookings);
     } catch (err) {
         res.status(500).json({ message: 'Server Error' });

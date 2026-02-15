@@ -94,8 +94,32 @@ const allocateRoom = async (req, res) => {
     }
 };
 
+// @desc    Delete room
+// @route   DELETE /api/rooms/:id
+// @access  Admin
+const deleteRoom = async (req, res) => {
+    try {
+        const room = await Room.findById(req.params.id);
+
+        if (!room) {
+            return res.status(404).json({ message: 'Room not found' });
+        }
+
+        // Check if room has occupants
+        if (room.occupants.length > 0) {
+            return res.status(400).json({ message: 'Cannot delete room with assigned students. Please remove occupants first.' });
+        }
+
+        await room.deleteOne();
+        res.json({ message: 'Room removed' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error', error: err.message });
+    }
+};
+
 module.exports = {
     getRooms,
     createRoom,
-    allocateRoom
+    allocateRoom,
+    deleteRoom
 };
