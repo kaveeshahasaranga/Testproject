@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { LayoutDashboard, Bed, PenTool, Calendar, ShoppingCart, LogOut } from 'lucide-react';
+import { LayoutDashboard, Bed, PenTool, Calendar, ShoppingCart, LogOut, Users, User } from 'lucide-react';
 
 const Sidebar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -14,6 +14,7 @@ const Sidebar = () => {
 
     const studentNavItems = [
         { path: '/', name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+        { path: '/profile', name: 'My Profile', icon: <User size={20} /> },
         { path: '/rooms', name: 'My Room', icon: <Bed size={20} /> },
         { path: '/maintenance', name: 'Maintenance', icon: <PenTool size={20} /> },
         { path: '/booking', name: 'Book Resources', icon: <Calendar size={20} /> },
@@ -22,9 +23,12 @@ const Sidebar = () => {
 
     const adminNavItems = [
         { path: '/', name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+        { path: '/profile', name: 'My Profile', icon: <User size={20} /> },
+        { path: '/admin/users', name: 'User Management', icon: <Users size={20} /> },
         { path: '/rooms', name: 'Manage Rooms', icon: <Bed size={20} /> },
         { path: '/maintenance', name: 'Maintenance', icon: <PenTool size={20} /> },
         { path: '/grocery', name: 'Grocery Orders', icon: <ShoppingCart size={20} /> },
+        { path: '/admin/bookings', name: 'View Bookings', icon: <Calendar size={20} /> },
     ];
 
     const navItems = (user?.role === 'admin' || user?.role === 'warden') ? adminNavItems : studentNavItems;

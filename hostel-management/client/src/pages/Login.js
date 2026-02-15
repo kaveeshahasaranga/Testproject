@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -8,8 +9,8 @@ import axios from 'axios';
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
-    const [error, setError] = useState(null);
     const { login } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext);
     const navigate = useNavigate();
 
     const { email, password } = formData;
@@ -18,13 +19,13 @@ const Login = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
         try {
             const res = await axios.post('/api/auth/login', formData);
             login(res.data);
+            showNotification('success', 'Login successful!');
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            showNotification('error', err.response?.data?.message || 'Login failed');
         }
     };
 
@@ -36,11 +37,7 @@ const Login = () => {
                     <p className="text-gray-600">Sign in to manage your hostel stay</p>
                 </div>
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
-                        {error}
-                    </div>
-                )}
+
 
                 <form onSubmit={onSubmit}>
                     <Input
