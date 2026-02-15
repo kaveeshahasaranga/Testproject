@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -8,6 +9,7 @@ import { Calendar, Clock, CheckCircle } from 'lucide-react';
 
 const ResourceBooking = () => {
     const { user } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext);
     const [bookings, setBookings] = useState([]);
     const [formData, setFormData] = useState({
         resource: 'Washing Machine',
@@ -17,7 +19,6 @@ const ResourceBooking = () => {
     });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState(null);
 
     const resources = ['Washing Machine', 'Study Room', 'TV Room', 'Ironing', 'Other'];
 
@@ -48,17 +49,16 @@ const ResourceBooking = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.delete(`/api/bookings/${id}`, config);
-            setMessage({ type: 'success', text: 'Booking cancelled successfully' });
+            showNotification('success', 'Booking cancelled successfully');
             fetchBookings();
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Cancellation failed' });
+            showNotification('error', err.response?.data?.message || 'Cancellation failed');
         }
     };
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
-        setMessage(null);
 
         try {
             const token = localStorage.getItem('token');
@@ -66,11 +66,11 @@ const ResourceBooking = () => {
 
             await axios.post('/api/bookings', formData, config);
 
-            setMessage({ type: 'success', text: 'Booking created successfully!' });
+            showNotification('success', 'Booking created successfully!');
             fetchBookings();
             // Reset form optionally, or keep date for next booking
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Booking failed' });
+            showNotification('error', err.response?.data?.message || 'Booking failed');
         } finally {
             setSubmitting(false);
         }
@@ -90,12 +90,6 @@ const ResourceBooking = () => {
                         <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                             <Calendar className="mr-2 text-indigo-600" /> New Booking
                         </h3>
-
-                        {message && (
-                            <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {message.text}
-                            </div>
-                        )}
 
                         <form onSubmit={onSubmit}>
                             <div className="mb-4">

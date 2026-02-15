@@ -123,6 +123,44 @@ const getAllUsers = async (req, res) => {
     }
 };
 
+// @desc    Update user password
+// @route   PUT /api/auth/password
+// @access  Private
+const updatePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    // Simple validation
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Please provide both current and new passwords' });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check current password
+        const isMatch = await user.matchPassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid current password' });
+        }
+
+        // Update password (pre-save hook will hash it)
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error', error: err.message });
+    }
+};
+
 // @desc    Delete user
 // @route   DELETE /api/auth/users/:id
 // @access  Private (Admin)
@@ -146,5 +184,6 @@ module.exports = {
     loginUser,
     getMe,
     getAllUsers,
-    deleteUser
+    deleteUser,
+    updatePassword
 };

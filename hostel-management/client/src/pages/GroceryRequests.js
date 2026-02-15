@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import axios from 'axios';
-import { ShoppingCart, ShoppingBag, Truck, Check } from 'lucide-react';
-
-// Renaming the Lucide ShoppingBag to avoid conflict if necessary, but here reusing ShoppingBag variable name is fine if not imported twice
-// Wait, I imported ShoppingIcon? Lucide React exports `ShoppingCart` usually, let's stick to standard names or check imports
-// Correcting imports based on generic Lucide logic
+import { ShoppingBag, Truck, Check } from 'lucide-react';
 
 const GroceryRequests = () => {
     const { user } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext);
     const [requests, setRequests] = useState([]);
     const [formData, setFormData] = useState({
         itemName: '',
@@ -21,7 +19,6 @@ const GroceryRequests = () => {
     });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editStatus, setEditStatus] = useState('');
 
@@ -49,7 +46,6 @@ const GroceryRequests = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
-        setMessage(null);
 
         try {
             const token = localStorage.getItem('token');
@@ -57,11 +53,11 @@ const GroceryRequests = () => {
 
             await axios.post('/api/grocery', formData, config);
 
-            setMessage({ type: 'success', text: 'Order placed successfully!' });
+            showNotification('success', 'Order placed successfully!');
             setFormData({ itemName: '', quantity: 1, unit: 'units', notes: '' });
             fetchRequests();
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Order failed' });
+            showNotification('error', err.response?.data?.message || 'Order failed');
         } finally {
             setSubmitting(false);
         }
@@ -77,11 +73,11 @@ const GroceryRequests = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.put(`/api/grocery/${id}`, { status: editStatus }, config);
-            setMessage({ type: 'success', text: 'Order status updated' });
+            showNotification('success', 'Order status updated');
             setEditingId(null);
             fetchRequests();
         } catch (err) {
-            setMessage({ type: 'error', text: 'Update failed' });
+            showNotification('error', 'Update failed');
         }
     };
 
@@ -104,12 +100,6 @@ const GroceryRequests = () => {
                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                                 <ShoppingBag className="mr-2 text-indigo-600" /> New Order
                             </h3>
-
-                            {message && (
-                                <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {message.text}
-                                </div>
-                            )}
 
                             <form onSubmit={onSubmit}>
                                 <Input
@@ -161,12 +151,6 @@ const GroceryRequests = () => {
                     <h3 className="text-xl font-bold text-gray-800 mb-4">
                         {isAdmin ? 'All Orders' : 'Order History'}
                     </h3>
-
-                    {isAdmin && message && (
-                        <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {message.text}
-                        </div>
-                    )}
 
                     {requests.length === 0 ? (
                         <Card className="text-center py-10 text-gray-500">
@@ -223,9 +207,9 @@ const GroceryRequests = () => {
                                         ) : (
                                             <>
                                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${req.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                        req.status === 'Approved' ? 'bg-blue-100 text-blue-800' :
-                                                            req.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                                                'bg-red-100 text-red-800'
+                                                    req.status === 'Approved' ? 'bg-blue-100 text-blue-800' :
+                                                        req.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                                            'bg-red-100 text-red-800'
                                                     }`}>
                                                     {req.status}
                                                 </span>

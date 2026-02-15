@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import NotificationContext from '../context/NotificationContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -8,6 +9,7 @@ import { PenTool, Clock, CheckCircle, XCircle, Loader, Upload } from 'lucide-rea
 
 const Maintenance = () => {
     const { user } = useContext(AuthContext);
+    const { showNotification } = useContext(NotificationContext);
     const [requests, setRequests] = useState([]);
     const [formData, setFormData] = useState({
         category: 'Electricity',
@@ -16,7 +18,6 @@ const Maintenance = () => {
     });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({ status: '', adminRemarks: '' });
 
@@ -55,7 +56,6 @@ const Maintenance = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
-        setMessage(null);
 
         const data = new FormData();
         data.append('category', formData.category);
@@ -75,11 +75,11 @@ const Maintenance = () => {
 
             await axios.post('/api/maintenance', data, config);
 
-            setMessage({ type: 'success', text: 'Request submitted successfully!' });
+            showNotification('success', 'Request submitted successfully!');
             setFormData({ category: 'Electricity', description: '', image: null });
             fetchRequests(); // Refresh list
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Submission failed' });
+            showNotification('error', err.response?.data?.message || 'Submission failed');
         } finally {
             setSubmitting(false);
         }
@@ -95,11 +95,11 @@ const Maintenance = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.put(`/api/maintenance/${id}`, editData, config);
-            setMessage({ type: 'success', text: 'Request updated successfully' });
+            showNotification('success', 'Request updated successfully');
             setEditingId(null);
             fetchRequests();
         } catch (err) {
-            setMessage({ type: 'error', text: 'Update failed' });
+            showNotification('error', 'Update failed');
         }
     };
 
@@ -145,12 +145,6 @@ const Maintenance = () => {
                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                                 <PenTool className="mr-2 text-indigo-600" /> New Request
                             </h3>
-
-                            {message && (
-                                <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {message.text}
-                                </div>
-                            )}
 
                             <form onSubmit={onSubmit}>
                                 <div className="mb-4">
@@ -205,12 +199,6 @@ const Maintenance = () => {
                     <h3 className="text-xl font-bold text-gray-800 mb-4">
                         {isAdmin ? 'All Requests' : 'My Requests'}
                     </h3>
-
-                    {isAdmin && message && (
-                        <div className={`p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {message.text}
-                        </div>
-                    )}
 
                     {requests.length === 0 ? (
                         <Card className="text-center py-10 text-gray-500">
