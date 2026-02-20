@@ -4,7 +4,7 @@ const User = require('./models/User');
 const Room = require('./models/Room');
 const bcrypt = require('bcryptjs');
 
-dotenv.config();
+dotenv.config();:
 
 const seedData = async () => {
     try {
